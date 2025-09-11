@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Управление книгами</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #3e8e41;
+    }
+    .button-container {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .form-container {
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .form-container label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-container input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Управление книгами</h1>
+
+  <div class="button-container">
+    <button id="getAllBooksButton">Получить все книги</button>
+    <button id="addBookButton">Добавить книгу</button>
+    <button id="updateBookButton">Изменить книгу</button>
+    <button id="deleteAllBooksButton">Удалить все книги</button>
+  </div>
+
+  <!-- Форма для добавления книги -->
+  <div id="addBookFormContainer" class="form-container" style="display: none;">
+    <h2>Добавить книгу</h2>
+    <form id="addBookForm">
+      <label for="addTitle">Название:</label>
+      <input type="text" id="addTitle" name="title" required>
+
+      <label for="addAuthor">Автор:</label>
+      <input type="text" id="addAuthor" name="author" required>
+
+      <button type="submit">Добавить</button>
+    </form>
+  </div>
+
+  <!-- Форма для изменения книги -->
+  <div id="updateBookFormContainer" class="form-container" style="display: none;">
+    <h2>Изменить книгу</h2>
+    <label for="selectBook">Выберите книгу для изменения:</label>
+    <select id="selectBook"></select>
+
+    <form id="updateBookForm">
+      <label for="updateTitle">Название:</label>
+      <input type="text" id="updateTitle" name="title" required>
+
+      <label for="updateAuthor">Автор:</label>
+      <input type="text" id="updateAuthor" name="author" required>
+
+      <button type="submit">Изменить</button>
+    </form>
+  </div>
+
+  <ul id="bookList">
+    <!-- Здесь будут отображаться книги -->
+  </ul>
+
+  <script>
+    // Функция для получения списка всех книг с бэкенда
+    async function getAllBooks() {
+      try {
+        const response = await fetch('http://localhost:8000/books/get_all');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const books = await response.json();
+        return books;
+      } catch (error) {
+        console.error('Ошибка при получении списка всех книг:', error);
+        return [];
+      }
+    }
+
+    // Функция для добавления книги
+    async function addBook(event) {
+      event.preventDefault(); // Предотвращаем перезагрузку страницы при отправке формы
+
+      const title = document.getElementById('addTitle').value;
+      const author = document.getElementById('addAuthor').value;
+
+      try {
+        const response = await fetch('http://localhost:8000/books/add_book', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ title, author})
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        alert('Книга успешно добавлена!');
+        document.getElementById('addBookForm').reset(); // Очищаем форму
+        await displayAllBooks(); // Обновляем список книг
+        hideAddBookForm(); // Скрываем форму
+      } catch (error) {
+        console.error('Ошибка при добавлении книги:', error);
+        alert('Произошла ошибка при добавлении книги.');
+      }
+    }
+
+    // Функция для изменения книги
+    async function updateBook(event) {
+      event.preventDefault();
+
+      const bookId = document.getElementById('selectBook').value;
+      const title = document.getElementById('updateTitle').value;
+      const author = document.getElementById('updateAuthor').value;
+
+      try {
+        const response = await fetch(`http://localhost:8000/books/update/${bookId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ title, author})
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        alert('Книга успешно изменена!');
+        document.getElementById('updateBookForm').reset();
+        hideUpdateBookForm();
+        await displayAllBooks();
+      } catch (error) {
+        console.error('Ошибка при изменении книги:', error);
+        alert('Произошла ошибка при изменении книги.');
+      }
+    }
+
+    // Функция для удаления всех книг
+    async function deleteAllBooks() {
+      try {
+        const response = await fetch('http://localhost:8000/books/delete_all', {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        alert('Все книги успешно удалены.');
+        displayBooks([]); // Очищаем список на странице
+      } catch (error) {
+        console.error('Ошибка при удалении всех книг:', error);
+        alert('Произошла ошибка при удалении книг.');
+      }
+    }
+
+    // Функция для отображения списка книг на странице
+    function displayBooks(books) {
+      const bookList = document.getElementById('bookList');
+      bookList.innerHTML = '';
+
+      if (books.length === 0) {
+        bookList.innerHTML = '<p>Список книг пуст или произошла ошибка при загрузке.</p>';
+        return;
+      }
+
+      books.forEach(book => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <strong>${book.title}</strong><br>
+          Автор: ${book.author}<br>
+        `;
+        bookList.appendChild(listItem);
+      });
+    }
+
+    // Функция для отображения всех книг и заполнения выпадающего списка для изменения
+    async function displayAllBooks() {
+      const books = await getAllBooks();
+      displayBooks(books);
+
+      // Заполняем выпадающий список для изменения книги
+      const selectBook = document.getElementById('selectBook');
+      selectBook.innerHTML = '';
+      books.forEach(book => {
+        const option = document.createElement('option');
+        option.value = book.id; // Предполагаем, что у книги есть поле id
+        option.text = book.title;
+        selectBook.appendChild(option);
+      });
+    }
+
+    // Функции для отображения и скрытия форм
+    function showAddBookForm() {
+      document.getElementById('addBookFormContainer').style.display = 'block';
+    }
+
+    function hideAddBookForm() {
+      document.getElementById('addBookFormContainer').style.display = 'none';
+    }
+
+    function showUpdateBookForm() {
+      document.getElementById('updateBookFormContainer').style.display = 'block';
+    }
+
+    function hideUpdateBookForm() {
+      document.getElementById('updateBookFormContainer').style.display = 'none';
+    }
+
+    // Получаем ссылки на кнопки и формы
+    const getAllBooksButton = document.getElementById('getAllBooksButton');
+    const addBookButton = document.getElementById('addBookButton');
+    const updateBookButton = document.getElementById('updateBookButton');
+    const deleteAllBooksButton = document.getElementById('deleteAllBooksButton');
+    const addBookForm = document.getElementById('addBookForm');
+    const updateBookForm = document.getElementById('updateBookForm');
+
+    // Добавляем обработчики событий на кнопки
+    getAllBooksButton.addEventListener('click', async () => {
+      await displayAllBooks();
+    });
+    addBookButton.addEventListener('click', showAddBookForm);
+    updateBookButton.addEventListener('click', showUpdateBookForm);
+    deleteAllBooksButton.addEventListener('click', deleteAllBooks);
+
+    // Добавляем обработчики событий на формы
+    addBookForm.addEventListener('submit', addBook);
+    updateBookForm.addEventListener('submit', updateBook);
+
+    // Скрываем формы при загрузке страницы
+    hideAddBookForm();
+    hideUpdateBookForm();
+
+    // (Опционально) Запускаем отображение списка книг при загрузке страницы
+    // getAllBooksButton.click();
+  </script>
+
+</body>
+</html>
