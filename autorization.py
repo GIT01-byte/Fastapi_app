@@ -7,8 +7,8 @@ import uvicorn
 app = FastAPI()
 
 config = AuthXConfig(JWT_SECRET_KEY='SECRET_KEY',
-                     JWT_ACCESS_COOKIE_NAME='my_access_token',
-                     JWT_TOKEN_LOCATION=['cookies'])
+                    JWT_ACCESS_COOKIE_NAME='my_access_token',
+                    JWT_TOKEN_LOCATION=['cookies'])
 security = AuthX(config=config)
 
 class UserLoginSchema(BaseModel):
@@ -16,7 +16,7 @@ class UserLoginSchema(BaseModel):
     password: str
 
 @app.post('/login',
-           summary='Autorization', tags=['Autorization'])
+        summary='Autorization', tags=['Autorization'])
 def login(creds: UserLoginSchema, response: Response):
     if creds.username == 'test' and creds.password == 'test':
         token = security.create_access_token(uid='12345')
@@ -25,8 +25,8 @@ def login(creds: UserLoginSchema, response: Response):
     raise HTTPException(status_code=401, detail='Incorrect username or password')
 
 @app.get('/protected',
-          summary='Protected', tags=['Autorization'],
-          dependencies=[Depends(security.access_token_required)])
+        summary='Protected', tags=['Autorization'],
+        dependencies=[Depends(security.access_token_required)])
 def protected():
     return {'data': 'TOP_SECRET'}
 

@@ -1,16 +1,22 @@
-
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
+import uvicorn
+
+from pydantic import BaseModel
+
+from demo_auth.views import demo_auth_router
+
 app = FastAPI()
+
+app.include_router(demo_auth_router)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
     allow_methods=["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
 )
+
 
 class BookAddScheme(BaseModel):
     title: str
@@ -30,12 +36,17 @@ books = [
     },
 ]
 
-@app.get('/books/get_all', summary='Получить все книги', tags=['Книги📚'])
+
+@app.get('/books/get_all',
+        summary='Получить все книги',
+        tags=['Книги📚'])
 def get_books():
     return books
 
 
-@app.post('/books/add_book', summary='Добавить книгу', tags=['Книги📚'])
+@app.post('/books/add_book',
+        summary='Добавить книгу',
+        tags=['Книги📚'])
 def add_book(book: BookAddScheme):
     new_book = {
         'id': len(books) + 1,
@@ -50,7 +61,9 @@ def add_book(book: BookAddScheme):
     return {'success': True, 'message': 'Книга успешно добавлена!'}
 
 
-@app.put('/books/update/{book_id}', summary='Обновить информацию о книге', tags=['Книги📚'])
+@app.put('/books/update/{book_id}',
+        summary='Обновить информацию о книге',
+        tags=['Книги📚'])
 def update_book(updated_book: BookAddScheme, book_id: int):
     for i, book in enumerate(books):
         if book['id'] == book_id:
@@ -60,7 +73,9 @@ def update_book(updated_book: BookAddScheme, book_id: int):
     raise HTTPException(status_code=404, detail='Книга не найдена')
 
 
-@app.delete('/books/delete_all', summary='Удалить все книги', tags=['Книги📚'])
+@app.delete('/books/delete_all',
+            summary='Удалить все книги',
+            tags=['Книги📚'])
 def books_cleare():
     books.clear()
     return {'success': True, 'message': 'Книги успешно удаленны!'}
