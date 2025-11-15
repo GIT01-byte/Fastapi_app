@@ -1,5 +1,7 @@
 from typing import List
+
 from sqlalchemy import delete, select
+
 from schemas.tasks import TaskCreateSchema
 from database.tasks import new_session
 from models.tasks import TaskOrm
@@ -14,6 +16,7 @@ class TaskRepository:
             task_models = result.scalars().all()
             return task_models
 
+
     @classmethod
     async def get_by_id(cls, task_id: int):
         async with new_session() as session:
@@ -21,6 +24,7 @@ class TaskRepository:
             result = await session.execute(query)
             task = result.scalars().first()
             return task
+
 
     @classmethod
     async def add_task(cls, data: TaskCreateSchema):
@@ -33,6 +37,7 @@ class TaskRepository:
             await session.commit()
             return task.id
 
+
     @classmethod
     async def update_task(cls, task: TaskOrm):
         async with new_session() as session:
@@ -40,6 +45,7 @@ class TaskRepository:
             await session.commit()
             await session.refresh(task)
             return task
+
 
     @classmethod
     async def delete_task(cls, task_id: int):
@@ -49,8 +55,9 @@ class TaskRepository:
             await session.commit()
             return True
 
+
     @classmethod
-    async def delete_task(cls, task_ids: List[int]):
+    async def delete_tasks(cls, task_ids: List[int]):
         async with new_session() as session:
             query = delete(TaskOrm).where(TaskOrm.id.in_(task_ids))
             await session.execute(query)

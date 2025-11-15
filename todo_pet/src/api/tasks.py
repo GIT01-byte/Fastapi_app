@@ -18,7 +18,7 @@ async def get_tasks():
 
 @router.post('/add', summary='Добавить задачу ➕')
 async def add_task(
-    task: TaskCreateSchema
+    task: TaskCreateSchema,
 ):
     task_id = await TaskRepository.add_task(task)
     return {'succes': True, 'task_id': task_id}

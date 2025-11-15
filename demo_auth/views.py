@@ -6,7 +6,10 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Header, status, Response, Cookie
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
-demo_auth_router = APIRouter(prefix='/demo_auth', tags=['Demo Auth'])
+demo_auth_router = APIRouter(
+    prefix='/demo_auth',
+    tags=['Demo Auth'],
+)
 
 security = HTTPBasic()
 
