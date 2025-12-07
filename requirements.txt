@@ -3,10 +3,12 @@ aiosqlite
 
 fastapi
 uvicorn
+authx
 
 pydantic
 pydantic-settings
 
-passlib
 pyjwt[crypto]
 bcrypt
+
+python-multipart
