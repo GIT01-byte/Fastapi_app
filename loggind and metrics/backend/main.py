@@ -3,25 +3,21 @@ from fastapi import (
     FastAPI,
     HTTPException,
     )
-
 from fastapi.middleware.cors import CORSMiddleware
-
 from fastapi.security import HTTPBearer
-
-import uvicorn
 
 from pydantic import BaseModel
 
 from src.jwt_auth.views import jwt_auth_router
-
 from src.jwt_auth.dependencies import get_current_active_auth_user
 
+from prometheus_fastapi_instrumentator import Instrumentator
 
 prometheus_config = PrometheusConfig()
 
 http_bearer = HTTPBearer(auto_error=False)
-app = FastAPI(middleware=)
-
+app = FastAPI(middleware=prometheus_config)
+Instrumentator().instrument(app).expose(app)
 app.include_router(jwt_auth_router)
 
 app.add_middleware(
@@ -129,4 +125,5 @@ def books_cleare(
 
 
 if __name__ == '__main__':
+    import uvicorn
     uvicorn.run(f'{__name__}:app', reload=True, host='0.0.0.0', port=8000)

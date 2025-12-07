@@ -1,4 +1,4 @@
-prometheus_client
+prometheus_fastapi_instrumentator
 fastapi
 uvicorn
 
