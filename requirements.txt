@@ -1,6 +1,7 @@
 sqlalchemy
 aiosqlite
 
+prometheus_client
 fastapi
 uvicorn
 authx

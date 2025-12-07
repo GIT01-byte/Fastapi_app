@@ -17,8 +17,10 @@ from src.jwt_auth.views import jwt_auth_router
 from src.jwt_auth.dependencies import get_current_active_auth_user
 
 
+prometheus_config = PrometheusConfig()
+
 http_bearer = HTTPBearer(auto_error=False)
-app = FastAPI()
+app = FastAPI(middleware=)
 
 app.include_router(jwt_auth_router)
 
