@@ -1,8 +1,8 @@
 from fastapi import (
-    Depends,
+    Depends, 
     FastAPI,
     HTTPException,
-)
+    )
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -16,6 +16,7 @@ from demo_auth.views import demo_auth_router
 from jwt_auth.views import jwt_auth_router
 
 from jwt_auth.dependencies import get_current_active_auth_user
+
 
 http_bearer = HTTPBearer(auto_error=False)
 app = FastAPI()
@@ -50,12 +51,12 @@ books = [
 
 
 @app.get('/books/get_all',
-         summary='Получить все книги',
-         tags=['Книги📚'],
-         dependencies=[Depends(http_bearer)],
-         )
+        summary='Получить все книги',
+        tags=['Книги📚'],
+        dependencies=[Depends(http_bearer)],
+        )
 def get_books(
-        user=Depends(get_current_active_auth_user),
+    user = Depends(get_current_active_auth_user),
 ):
     return {
         'current_user': user.username,
@@ -64,17 +65,17 @@ def get_books(
 
 
 @app.post('/books/add_book',
-          summary='Добавить книгу',
-          tags=['Книги📚'],
-          dependencies=[Depends(http_bearer)],
-          )
+        summary='Добавить книгу',
+        tags=['Книги📚'],
+        dependencies=[Depends(http_bearer)],
+        )
 def add_book(
-        book: BookAddScheme,
-        user=Depends(get_current_active_auth_user),
+    book: BookAddScheme,
+    user = Depends(get_current_active_auth_user),
 ):
     new_book = {
         'id': len(books) + 1,
-        'title': book.title,
+        'title': book.title,  
         'author': book.author
     }
     for existing_book in books:
@@ -86,18 +87,18 @@ def add_book(
         'current_user': user.username,
         'success': True,
         'message': 'Книга успешно добавлена!',
-    }
+        }
 
 
 @app.put('/books/update/{book_id}',
-         summary='Обновить информацию о книге',
-         tags=['Книги📚'],
-         dependencies=[Depends(http_bearer)],
-         )
+        summary='Обновить информацию о книге',
+        tags=['Книги📚'],
+        dependencies=[Depends(http_bearer)],
+        )
 def update_book(
-        updated_book: BookAddScheme,
-        book_id: int,
-        user=Depends(get_current_active_auth_user),
+    updated_book: BookAddScheme,
+    book_id: int,
+    user = Depends(get_current_active_auth_user),
 ):
     for i, book in enumerate(books):
         if book['id'] == book_id:
@@ -107,7 +108,7 @@ def update_book(
                 'current_user': user.username,
                 'success': True,
                 'message': 'Книга успешно обновлена!',
-            }
+                }
     raise HTTPException(status_code=404, detail='Книга не найдена')
 
 
@@ -117,15 +118,15 @@ def update_book(
             dependencies=[Depends(http_bearer)],
             )
 def books_cleare(
-        user=Depends(get_current_active_auth_user),
+    user = Depends(get_current_active_auth_user),
 ):
     books.clear()
     return {
         'current_user': user.username,
         'success': True,
         'message': 'Книги успешно удаленны!',
-    }
+        }
 
 
 if __name__ == '__main__':
-    uvicorn.run(f'{__name__}:app', reload=True)
+    uvicorn.run(f'{__name__}:app', reload=True, host='0.0.0.0', port=8000)
